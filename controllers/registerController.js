@@ -1,14 +1,5 @@
-const usersDB = {
-  users: require("../model/users.json"),
-  setUsers: function (data) {
-    // console.log(data);
-    this.users = data;
-  },
-};
-
+const User = require("../model/User");
 const bcrypt = require("bcrypt");
-const fsPromises = require("fs").promises;
-const path = require("path");
 
 const handleNewUser = async (req, res) => {
   const { user, pwd } = req.body;
@@ -19,24 +10,20 @@ const handleNewUser = async (req, res) => {
       .json({ message: "username and passwords are required! " });
   }
 
-  const duplicate = usersDB.users.find((person) => person.username === user);
-
+  const duplicate = await User.findOne({ username: user }).exec();
   if (duplicate) return res.sendStatus(409);
 
   try {
     const hashedPwd = await bcrypt.hash(pwd, 10);
-    const newUser = {
-      username: user,
-      roles: { User: 2001 },
-      password: hashedPwd,
-    };
-    usersDB.setUsers([...usersDB.users, newUser]);
 
-    await fsPromises.writeFile(
-      path.join(__dirname, "..", "model", "users.json"),
-      JSON.stringify(usersDB.users)
-    );
-    // console.log(usersDB.users);
+    // create and store new user in momgodb
+    const result = await User.create({
+      username: user,
+      password: hashedPwd,
+    });
+
+    console.log(result);
+
     res.status(201).json({ success: `New user ${user} created!` });
   } catch (error) {
     console.log(error);
