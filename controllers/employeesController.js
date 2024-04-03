@@ -1,9 +1,3 @@
-const data = {
-  employees: require("../model/employees.json"),
-  setEmployees: function (data) {
-    this.employees = data;
-  },
-};
 const Employee = require("../model/Employee");
 
 const getAllEmployees = async (req, res) => {
